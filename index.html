@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мій Профіль</title>
+    <title>Кабінет Агентства</title>
     <!-- Підключаємо офіційний скрипт Telegram -->
     <script src="https://telegram.org"></script>
     <style>
@@ -16,93 +16,130 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 80vh;
+            height: 90vh;
         }
-        .profile-box {
+        .agency-box {
             background-color: var(--tg-theme-secondary-bg-color, #242f3d);
             border-radius: 16px;
-            padding: 30px;
+            padding: 25px;
             width: 90%;
-            max-width: 320px;
-            text-align: center;
+            max-width: 340px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
-        .avatar-circle {
-            width: 90px;
-            height: 90px;
+        .header-profile {
+            display: flex;
+            align-items: center;
+            text-align: left;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+        }
+        .avatar {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background-color: var(--tg-theme-button-color, #5288c1);
             color: var(--tg-theme-button-text-color, #ffffff);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
-            font-weight: bold;
-            margin: 0 auto 20px auto;
-        }
-        h2 {
-            margin: 10px 0 5px 0;
             font-size: 24px;
+            font-weight: bold;
+            margin-right: 15px;
         }
-        .username-text {
-            color: #708499;
-            font-size: 16px;
-            margin-bottom: 25px;
-        }
-        .welcome-msg {
+        h2 { margin: 0; font-size: 20px; }
+        .username { color: #708499; font-size: 14px; margin-top: 2px; }
+        
+        .status-card {
             background-color: rgba(82, 136, 193, 0.1);
             border: 1px solid rgba(82, 136, 193, 0.3);
-            padding: 12px;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .status-title { font-size: 12px; color: #708499; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-value { font-size: 16px; font-weight: bold; color: #10b981; margin-top: 5px; }
+
+        .btn {
+            background-color: var(--tg-theme-button-color, #5288c1);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
             border-radius: 10px;
-            font-size: 14px;
-            color: var(--tg-theme-text-color, #ffffff);
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+            display: block;
+            text-decoration: none;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .btn:active { opacity: 0.85; }
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--tg-theme-button-color, #5288c1);
+            color: var(--tg-theme-button-color, #5288c1);
         }
     </style>
 </head>
 <body>
 
-    <div class="profile-box">
-        <!-- Сюди стане перша літера імені -->
-        <div class="avatar-circle" id="user-avatar">?</div>
-        <!-- Сюди стане повне ім'я -->
-        <h2 id="user-name">Завантаження...</h2>
-        <!-- Сюди стане @username користувача -->
-        <div class="username-text" id="user-username">@username</div>
-        
-        <div class="welcome-msg">
-            ✅ Ви успішно авторизувалися через свій Telegram акаунт!
+    <div class="agency-box">
+        <div class="header-profile">
+            <div class="avatar" id="u-avatar">?</div>
+            <div>
+                <h2 id="u-name">Завантаження...</h2>
+                <div class="username" id="u-username">@username</div>
+            </div>
         </div>
+        
+        <div class="status-card">
+            <div class="status-title">Статус аккаунта в агентстві</div>
+            <div class="status-value">● Клієнт (Активний)</div>
+        </div>
+
+        <!-- Кнопки дій для бізнесу -->
+        <button class="btn" id="order-btn">Залишити нову заявку 📝</button>
+        <button class="btn btn-secondary" id="support-btn">Зв'язатися з менеджером 💬</button>
     </div>
 
     <script>
-        // Ініціалізація Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // Функція для автоматичного зчитування акаунта користувача
+        // Считуємо реальні дані з Telegram
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             const user = tg.initDataUnsafe.user;
+            document.getElementById('u-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
             
-            // Виводимо реальне ім'я
-            document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
-            
-            # Виводимо реальний @username або ID, якщо юзернейму немає
             if (user.username) {
-                document.getElementById('user-username').innerText = "@" + user.username;
+                document.getElementById('u-username').innerText = "@" + user.username;
             } else {
-                document.getElementById('user-username').innerText = "ID: " + user.id;
+                document.getElementById('u-username').innerText = "ID: " + user.id;
             }
             
-            // Робимо красиву аватарку з першої літери імені
             if (user.first_name) {
-                document.getElementById('user-avatar').innerText = user.first_name.charAt(0).toUpperCase();
+                document.getElementById('u-avatar').innerText = user.first_name.charAt(0).toUpperCase();
             }
         } else {
-            // Заглушка, якщо відкрити просто в браузері, а не в Telegram
-            document.getElementById('user-name').innerText = "Гість";
-            document.getElementById('user-username').innerText = "@not_telegram";
+            document.getElementById('u-name').innerText = "Тест Акаунт";
+            document.getElementById('u-username').innerText = "@agency_partner";
+            document.getElementById('u-avatar').innerText = "A";
         }
+
+        // Дія для кнопки "Залишити заявку"
+        document.getElementById('order-btn').onclick = function() {
+            tg.showAlert("Форму заявок буде відкрито! Тут можна збирати контакти.");
+        };
+
+        // Дія для кнопки "Зв'язатися з менеджером"
+        document.getElementById('support-btn').onclick = function() {
+            tg.close(); // Просто закриваємо кабінет
+        };
     </script>
 </body>
 </html>
