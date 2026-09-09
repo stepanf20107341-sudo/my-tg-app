@@ -3,62 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Web App</title>
-    <!-- Подключаем официальный скрипт Telegram -->
+    <title>Telegram Кабінет</title>
     <script src="https://telegram.org"></script>
     <style>
         body {
-            font-family: sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #f4f4f5);
             color: var(--tg-theme-text-color, #000000);
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
         }
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
+        .profile-card {
+            background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+            border-radius: 16px;
+            padding: 20px;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            margin-top: 20px;
+        }
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0 auto 15px auto;
+        }
+        h2 { margin: 5px 0; font-size: 22px; }
+        .username { color: #8e8e93; font-size: 14px; margin-bottom: 20px; }
+        .balance-box {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .btn {
             background-color: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: opacity 0.2s;
         }
+        .btn:active { opacity: 0.8; }
+        .btn-save { background-color: #10b981; color: white; }
     </style>
 </head>
 <body>
 
-    <h1>Привет, <span id="user-name">Гость</span>!</h1>
-    <p>Это окно Web App внутри Telegram.</p>
-    
-    <!-- Кнопка, которая отправит данные обратно в чат с ботом -->
-    <button id="send-data-btn">Отправить данные боту</button>
+    <div class="profile-card">
+        <div class="avatar" id="user-avatar">?</div>
+        <h2 id="user-name">Завантаження...</h2>
+        <div class="username" id="user-username">@username</div>
+        
+        <div class="balance-box">
+            🪙 Баланс: <span id="balance-val">0</span> монет
+        </div>
+
+        <button class="btn" id="click-btn">Заробити 1 монету ⚡</button>
+        <button class="btn btn-save" id="save-btn">Зберегти та закрити</button>
+    </div>
 
     <script>
-        // Инициализируем объект Telegram WebApp
         const tg = window.Telegram.WebApp;
-        tg.ready(); // Сообщаем Telegram, что интерфейс загрузился
-
-        // Расширяем на весь экран (опционально)
+        tg.ready();
         tg.expand();
 
-        // Отображаем имя пользователя, если оно доступно
+        let balance = 0;
+        let usernameStr = "unknown";
+
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name;
+            const user = tg.initDataUnsafe.user;
+            document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
+            
+            if (user.username) {
+                usernameStr = "@" + user.username;
+                document.getElementById('user-username').innerText = usernameStr;
+            } else {
+                document.getElementById('user-username').innerText = "ID: " + user.id;
+            }
+            document.getElementById('user-avatar').innerText = user.first_name.charAt(0).toUpperCase();
+        } else {
+            document.getElementById('user-name').innerText = "Гість";
+            document.getElementById('user-username').innerText = "@not_telegram";
         }
 
-        // Обработка клика на кнопку
-        document.getElementById('send-data-btn').addEventListener('click', () => {
-            const dataToSend = { message: "Привет из Web App!", status: "success" };
-            
-            // Отправляем данные в виде строки обратно боту
-            tg.sendData(JSON.stringify(dataToSend));
-            
-            // Закрываем мини-приложение
+        document.getElementById('click-btn').addEventListener('click', () => {
+            balance++;
+            document.getElementById('balance-val').innerText = balance;
+        });
+
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const data = { balance: balance, username: usernameStr };
+            tg.sendData(JSON.stringify(data));
             tg.close();
         });
     </script>
