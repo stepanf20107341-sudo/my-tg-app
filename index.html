@@ -1,11 +1,5 @@
 from pathlib import Path
-import re
 
-src = Path("/mnt/data/Вставленный текст.txt")
-text = src.read_text(encoding="utf-8")
-
-# Build a clean, self-contained HTML page based on the supplied source,
-# fixing the malformed form/JS and adding safe local catalog persistence.
 html = r'''<!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -14,53 +8,64 @@ html = r'''<!DOCTYPE html>
 <title>Вірт Моделі України</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{--bg:#0b0f14;--panel:#121820;--border:#1f2937;--muted:#94a3b8;--pink:#ff4a85;--pink2:#be185d;--gold:#f59e0b}
+:root{--bg:#0b0f14;--card:#121820;--line:#1f2937;--pink:#ff4a85;--muted:#94a3b8;--gold:#f59e0b}
 *{box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:#fff;margin:0;padding:0 0 82px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#fff;margin:0;padding:0 0 78px}
 button,input{font:inherit}
-.header{background:var(--panel);padding:15px;text-align:center;border-bottom:1px solid var(--border)}
+button{cursor:pointer}
+.header{background:var(--card);padding:15px;text-align:center;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
 .header h1{margin:0;font-size:18px;color:var(--pink);text-transform:uppercase;letter-spacing:1px}
-.nav-tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);padding:10px;justify-content:center}
-.nav-btn{background:#e11d48;color:#fff;border:0;padding:9px 16px;border-radius:20px;font-size:13px;font-weight:700}
+.nav-tabs{display:flex;gap:8px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+.nav-btn,.filter-btn{border:0;border-radius:20px;padding:9px 14px;font-size:13px;font-weight:700}
+.nav-btn{background:#e11d48;color:#fff}.filter-btn{background:#1a232e;color:#fff}
+.filters{display:none;padding:12px;background:#0f151d;border-bottom:1px solid var(--line)}
+.filters.show{display:block}.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.filter-grid label{font-size:11px;color:var(--muted)}
+.filter-grid input{margin-top:5px}
 .catalog-container{padding:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.model-card{background:var(--panel);border-radius:12px;overflow:hidden;position:relative;border:1px solid var(--border);cursor:pointer}
-.vip-badge{position:absolute;top:8px;left:8px;background:#eab308;color:#000;font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;text-transform:uppercase;z-index:1}
-.model-photo{display:block;width:100%;height:210px;object-fit:cover;background:#1a232e}
-.price-badge{position:absolute;top:181px;right:8px;background:rgba(0,0,0,.78);color:#fff;font-size:11px;padding:4px 8px;border-radius:6px;font-weight:700}
+.model-card{background:var(--card);border-radius:12px;overflow:hidden;position:relative;border:1px solid var(--line);cursor:pointer}
+.vip-badge{position:absolute;top:8px;left:8px;background:#eab308;color:#000;font-size:10px;font-weight:800;padding:3px 6px;border-radius:4px}
+.model-photo{width:100%;height:210px;object-fit:cover;display:block;background:#202938}
+.price-badge{position:absolute;top:178px;right:8px;background:rgba(0,0,0,.78);color:#fff;font-size:11px;padding:4px 8px;border-radius:6px;font-weight:700}
 .card-info{padding:10px}.model-name{font-size:15px;font-weight:700;margin:0}
 .params-title{font-size:10px;color:#64748b;text-transform:uppercase;margin:8px 0 4px}
 .params-row{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
-.profile-container{padding:15px;max-width:700px;margin:auto}
-.back-btn{background:#1a232e;color:#fff;border:1px solid #334155;padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;margin-bottom:15px}
-.big-photo{width:100%;max-height:500px;object-fit:cover;border-radius:12px;background:#1a232e}
-.profile-title{font-size:24px;font-weight:700;margin:15px 0 5px}
-.price-section{background:var(--panel);border-radius:12px;padding:15px;margin-top:20px;border:1px solid var(--border)}
+.empty{text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1}
+.profile-container{padding:15px;max-width:600px;margin:auto}
+.back-btn{background:#1a232e;color:#fff;border:1px solid #334155;padding:8px 14px;border-radius:8px;font-size:13px;margin-bottom:15px}
+.big-photo{width:100%;max-height:430px;object-fit:cover;border-radius:12px;background:#202938}
+.profile-title{font-size:24px;font-weight:800;margin:15px 0 5px}
+.price-section{background:var(--card);border-radius:12px;padding:15px;margin-top:20px;border:1px solid var(--line)}
 .price-section-title{font-size:16px;font-weight:700;color:var(--pink);margin-bottom:12px}
 .price-table{width:100%;border-collapse:collapse}.price-table th{text-align:left;font-size:11px;color:#64748b;text-transform:uppercase;padding-bottom:8px}
-.price-table td{padding:10px 0;border-top:1px solid var(--border);font-size:14px}.price-val{color:var(--gold);font-weight:700;text-align:right}
-.form-container{padding:20px;max-width:500px;margin:auto}.form-title{color:var(--pink);font-size:18px;margin-bottom:20px;text-align:center;font-weight:700}
-.form-group{text-align:left;margin-bottom:12px}.form-row-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.price-table td{padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.price-val{color:var(--gold);font-weight:800;text-align:right}
+.form-container{padding:20px;max-width:500px;margin:auto}
+.form-title{color:var(--pink);font-size:18px;margin-bottom:20px;text-align:center;font-weight:800}
+.form-group{margin-bottom:12px}.form-row-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-input{width:100%;padding:12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px}
-input:focus{border-color:var(--pink);outline:none}.section-divider{height:1px;background:var(--border);margin:20px 0 15px}
-.submit-btn{background:linear-gradient(135deg,#ec4899,var(--pink2));color:#fff;border:0;padding:14px;font-size:15px;font-weight:700;border-radius:8px;width:100%;cursor:pointer}
-.bottom-menu{position:fixed;bottom:0;left:0;width:100%;background:var(--panel);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:10px 0;z-index:10}
-.menu-item{color:#64748b;font-size:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}.menu-item.active{color:var(--pink)}.menu-icon{font-size:20px}
-.hidden{display:none!important}.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:35px 10px}
-@media(max-width:520px){.catalog-container{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px}.model-photo{height:180px}.price-badge{top:151px}.card-info{padding:8px}.params-row{font-size:10px}}
+input{width:100%;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:#fff}
+input:focus{border-color:var(--pink);outline:none}.section-divider{height:1px;background:var(--line);margin:20px 0 15px}
+.submit-btn{background:linear-gradient(135deg,#ec4899,#be185d);color:#fff;border:0;padding:14px;font-size:15px;font-weight:800;border-radius:8px;width:100%}
+.bottom-menu{position:fixed;bottom:0;left:0;width:100%;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 0;z-index:10}
+.menu-item{color:#64748b;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:3px}.menu-item.active{color:var(--pink)}.menu-icon{font-size:20px}
+.hidden{display:none!important}
+@media(max-width:380px){.catalog-container{gap:8px;padding:8px}.model-photo{height:185px}.price-badge{top:153px}.form-row-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="header"><h1>Вірт Моделі України 💖</h1></div>
 
 <div id="screen-catalog">
-  <div class="nav-tabs"><button class="nav-btn" type="button" onclick="toggleFilters()">Параметри пошуку ▾</button></div>
-  <div id="filters" class="form-container hidden" style="padding-top:12px;padding-bottom:0">
-    <div class="form-group"><label for="search-name">Ім'я</label><input id="search-name" type="search" placeholder="Пошук за ім'ям"></div>
-    <div class="form-row-grid">
-      <div><label for="filter-age">Вік до</label><input id="filter-age" type="number" min="18" placeholder="30"></div>
-      <div><label for="filter-height">Ріст від</label><input id="filter-height" type="number" min="0" placeholder="160"></div>
-      <div><label for="filter-price">Ціна до</label><input id="filter-price" type="number" min="0" placeholder="3000"></div>
+  <div class="nav-tabs">
+    <button class="nav-btn" id="filter-toggle">Параметри пошуку ▾</button>
+  </div>
+  <div class="filters" id="filters">
+    <div class="filter-grid">
+      <div><label>Ім'я<input id="filter-name" type="text" placeholder="Наприклад, Діана"></label></div>
+      <div><label>Макс. вік<input id="filter-age" type="number" min="18" placeholder="30"></label></div>
+      <div><label>Мін. зріст<input id="filter-height" type="number" min="0" placeholder="160"></label></div>
+      <div><label>Макс. ціна вірту<input id="filter-price" type="number" min="0" placeholder="2000"></label></div>
     </div>
   </div>
   <div class="catalog-container" id="catalog-grid"></div>
@@ -68,20 +73,20 @@ input:focus{border-color:var(--pink);outline:none}.section-divider{height:1px;ba
 
 <div id="screen-profile" class="hidden">
   <div class="profile-container">
-    <button class="back-btn" type="button" onclick="closeProfile()">← Назад до каталогу</button>
-    <img class="big-photo" id="p-photo" src="" alt="Фото моделі" onerror="this.src=PLACEHOLDER">
-    <div class="profile-title" id="p-name"></div>
-    <div class="params-row" style="max-width:260px;margin-bottom:25px">
-      <span id="p-age"></span><span id="p-height"></span><span id="p-weight"></span>
+    <button class="back-btn" id="back-btn">← Назад до каталогу</button>
+    <img class="big-photo" id="p-photo" alt="Фото моделі">
+    <div class="profile-title" id="p-name">Ім'я, -- років</div>
+    <div class="params-row" style="max-width:220px;margin-bottom:25px">
+      <span id="p-age">-- років</span><span id="p-height">-- см</span><span id="p-weight">-- кг</span>
     </div>
     <div class="price-section">
       <div class="price-section-title">✨ Прайс послуг моделі</div>
       <table class="price-table">
         <thead><tr><th>Послуга</th><th style="text-align:right">Ціна</th></tr></thead>
         <tbody>
-          <tr><td>Відеодзвінок (Вірт) 10 хв</td><td class="price-val" id="p-price-virt"></td></tr>
-          <tr><td>Приватні Фото / Відео (Пакет)</td><td class="price-val" id="p-price-media"></td></tr>
-          <tr><td>Спілкування в чаті (1 день)</td><td class="price-val" id="p-price-chat"></td></tr>
+          <tr><td>Відеодзвінок (Вірт) 10 хв</td><td class="price-val" id="p-price-virt">0 грн</td></tr>
+          <tr><td>Приватні Фото / Відео</td><td class="price-val" id="p-price-media">0 грн</td></tr>
+          <tr><td>Спілкування в чаті (1 день)</td><td class="price-val" id="p-price-chat">0 грн</td></tr>
         </tbody>
       </table>
     </div>
@@ -91,184 +96,412 @@ input:focus{border-color:var(--pink);outline:none}.section-divider{height:1px;ba
 <div id="screen-cabinet" class="hidden">
   <div class="form-container">
     <div class="form-title">Створити анкету та вказати прайс</div>
-    <div class="form-group"><label for="m-name">Твоє ім'я (для каталогу)</label><input id="m-name" type="text" placeholder="Наприклад: Моніка"></div>
-    <div class="form-group"><label for="m-photo">Посилання на фото (URL)</label><input id="m-photo" type="url" placeholder="https://..."></div>
+    <div class="form-group"><label>Твоє ім'я</label><input id="m-name" type="text" placeholder="Наприклад: Моніка"></div>
+    <div class="form-group"><label>Посилання на фото (URL)</label><input id="m-photo" type="url" placeholder="https://..."></div>
     <div class="form-row-grid">
-      <div><label for="m-age">Вік</label><input id="m-age" type="number" min="18" max="99" placeholder="21"></div>
-      <div><label for="m-height">Ріст (см)</label><input id="m-height" type="number" min="100" max="250" placeholder="168"></div>
-      <div><label for="m-weight">Вага (кг)</label><input id="m-weight" type="number" min="30" max="250" placeholder="50"></div>
+      <div class="form-group"><label>Вік</label><input id="m-age" type="number" min="18" placeholder="21"></div>
+      <div class="form-group"><label>Ріст (см)</label><input id="m-height" type="number" min="1" placeholder="168"></div>
+      <div class="form-group"><label>Вага (кг)</label><input id="m-weight" type="number" min="1" placeholder="49"></div>
     </div>
     <div class="section-divider"></div>
-    <div class="form-title">Налаштування твого прайсу (грн)</div>
-    <div class="form-group"><label for="m-p-virt">Відеодзвінок (Вірт) 10 хв</label><input id="m-p-virt" type="number" min="0" placeholder="1000"></div>
-    <div class="form-group"><label for="m-p-media">Приватні Фото / Відео</label><input id="m-p-media" type="number" min="0" placeholder="1500"></div>
-    <div class="form-group"><label for="m-p-chat">Спілкування в чаті (день)</label><input id="m-p-chat" type="number" min="0" placeholder="2500"></div>
-    <button class="submit-btn" id="save-profile-btn" type="button">Опублікувати анкету 🚀</button>
+    <div class="form-title" style="font-size:15px;margin-bottom:10px;text-align:left">Налаштування прайсу (грн)</div>
+    <div class="form-group"><label>Відеодзвінок (Вірт) 10 хв</label><input id="m-p-virt" type="number" min="0" placeholder="1200"></div>
+    <div class="form-group"><label>Приватні Фото / Відео</label><input id="m-p-media" type="number" min="0" placeholder="1800"></div>
+    <div class="form-group"><label>Спілкування в чаті (день)</label><input id="m-p-chat" type="number" min="0" placeholder="2000"></div>
+    <button class="submit-btn" id="save-profile-btn">Опублікувати анкету 🚀</button>
   </div>
 </div>
 
 <div class="bottom-menu">
-  <div class="menu-item active" id="menu-home" role="button" tabindex="0"><span class="menu-icon">🔥</span><span>Головна</span></div>
-  <div class="menu-item" id="menu-cabinet" role="button" tabindex="0"><span class="menu-icon">👤</span><span>Кабінет</span></div>
+  <div class="menu-item active" id="menu-home"><span class="menu-icon">🔥</span><span>Головна</span></div>
+  <div class="menu-item" id="menu-cabinet"><span class="menu-icon">👤</span><span>Кабінет</span></div>
 </div>
 
 <script>
-const PLACEHOLDER = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="#1a232e"/><text x="50%" y="50%" fill="#94a3b8" font-size="28" text-anchor="middle">Фото недоступне</text></svg>'
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if(tg){tg.ready();tg.expand();}
+
+const FALLBACK_IMG='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="100%" height="100%" fill="#202938"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#94a3b8" font-size="28">Фото відсутнє</text></svg>'
 );
 
-const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-if (tg) { tg.ready(); tg.expand(); }
-
-const defaultModels = [
-  {name:'Діана',age:23,height:167,weight:52,pVirt:1000,pMedia:1500,pChat:2500,photo:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80',vip:true},
-  {name:'Міла',age:20,height:165,weight:50,pVirt:1200,pMedia:1800,pChat:3000,photo:'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',vip:true}
+const defaultModels=[
+  {name:'Діана',age:23,height:167,weight:52,p_virt:1000,p_media:1500,p_chat:2500,vip:true,photo:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=700&q=80'},
+  {name:'Міла',age:20,height:165,weight:50,p_virt:1200,p_media:1800,p_chat:3000,vip:true,photo:'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=700&q=80'}
 ];
 
-let userModels = [];
-try { userModels = JSON.parse(localStorage.getItem('virtualModelsUkraine') || '[]'); } catch (_) {}
-let models = [...defaultModels, ...userModels];
+let models=[];
 
-const catalogGrid = document.getElementById('catalog-grid');
+function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 
-function showScreen(showId) {
-  ['screen-catalog','screen-profile','screen-cabinet'].forEach(id =>
-    document.getElementById(id).classList.toggle('hidden', id !== showId)
+function normalizeModel(m){
+  return {name:String(m.name||'Модель'),age:num(m.age),height:num(m.height),weight:num(m.weight),
+    p_virt:num(m.p_virt),p_media:num(m.p_media),p_chat:num(m.p_chat),photo:String(m.photo||''),vip:!!m.vip};
+}
+
+async function loadModels(){
+  models=defaultModels.map(normalizeModel);
+  try{
+    const local=JSON.parse(localStorage.getItem('virtualModelsUkraine')||'[]');
+    if(Array.isArray(local)) models=models.concat(local.map(normalizeModel));
+  }catch(e){}
+  try{
+    const r=await fetch('/api/models',{cache:'no-store'});
+    if(r.ok){
+      const server=await r.json();
+      if(Array.isArray(server)) models=defaultModels.concat(server).map(normalizeModel);
+    }
+  }catch(e){}
+  renderCatalog();
+}
+
+function renderCatalog(){
+  const grid=document.getElementById('catalog-grid');
+  const name=document.getElementById('filter-name').value.trim().toLowerCase();
+  const maxAge=num(document.getElementById('filter-age').value);
+  const minHeight=num(document.getElementById('filter-height').value);
+  const maxPrice=num(document.getElementById('filter-price').value);
+  const filtered=models.filter(m=>
+    (!name||m.name.toLowerCase().includes(name)) &&
+    (!maxAge||m.age<=maxAge) &&
+    (!minHeight||m.height>=minHeight) &&
+    (!maxPrice||m.p_virt<=maxPrice)
   );
-}
-
-function setMenu(activeId) {
-  ['menu-home','menu-cabinet'].forEach(id =>
-    document.getElementById(id).classList.toggle('active', id === activeId)
-  );
-}
-
-function openModelProfile(model) {
-  document.getElementById('p-name').textContent = `${model.name}, ${model.age} років`;
-  document.getElementById('p-age').textContent = `${model.age} років`;
-  document.getElementById('p-height').textContent = `${model.height} см`;
-  document.getElementById('p-weight').textContent = `${model.weight} кг`;
-  document.getElementById('p-price-virt').textContent = `${model.pVirt} грн`;
-  document.getElementById('p-price-media').textContent = `${model.pMedia} грн`;
-  document.getElementById('p-price-chat').textContent = `${model.pChat} грн`;
-  const photo = document.getElementById('p-photo');
-  photo.onerror = () => { photo.src = PLACEHOLDER; };
-  photo.src = model.photo || PLACEHOLDER;
-  showScreen('screen-profile');
-  setMenu(null);
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function closeProfile() {
-  showScreen('screen-catalog');
-  setMenu('menu-home');
-}
-
-function renderCatalog() {
-  const q = document.getElementById('search-name').value.trim().toLowerCase();
-  const maxAge = Number(document.getElementById('filter-age').value) || Infinity;
-  const minHeight = Number(document.getElementById('filter-height').value) || 0;
-  const maxPrice = Number(document.getElementById('filter-price').value) || Infinity;
-
-  catalogGrid.innerHTML = '';
-  const filtered = models.filter(m =>
-    m.name.toLowerCase().includes(q) &&
-    Number(m.age) <= maxAge &&
-    Number(m.height) >= minHeight &&
-    Number(m.pVirt) <= maxPrice
-  );
-
-  if (!filtered.length) {
-    catalogGrid.innerHTML = '<div class="empty">Анкет за заданими параметрами не знайдено.</div>';
-    return;
-  }
-
-  filtered.forEach(model => {
-    const card = document.createElement('div');
-    card.className = 'model-card';
-    card.addEventListener('click', () => openModelProfile(model));
-
-    const badge = document.createElement('div');
-    badge.className = 'vip-badge';
-    badge.textContent = model.vip ? '👑 VIP' : '✨ NEW';
-
-    const img = document.createElement('img');
-    img.className = 'model-photo';
-    img.alt = `Фото ${model.name}`;
-    img.src = model.photo || PLACEHOLDER;
-    img.onerror = () => { img.src = PLACEHOLDER; };
-
-    const price = document.createElement('div');
-    price.className = 'price-badge';
-    price.textContent = `від ${model.pVirt} грн`;
-
-    const info = document.createElement('div');
-    info.className = 'card-info';
-    info.innerHTML = `
-      <p class="model-name"></p>
+  grid.innerHTML='';
+  if(!filtered.length){grid.innerHTML='<div class="empty">За заданими параметрами моделей не знайдено.</div>';return}
+  filtered.forEach((m,i)=>{
+    const card=document.createElement('div');
+    card.className='model-card';
+    const img=m.photo||FALLBACK_IMG;
+    card.innerHTML=`${m.vip?'<div class="vip-badge">👑 VIP</div>':''}
+      <img class="model-photo" src="${esc(img)}" alt="${esc(m.name)}">
+      <div class="price-badge">від ${esc(m.p_virt)} грн</div>
+      <div class="card-info"><p class="model-name">${esc(m.name)}</p>
       <div class="params-title">Параметри</div>
-      <div class="params-row">
-        <span>${model.age} років</span><span>${model.height} см</span><span>${model.weight} кг</span>
-      </div>`;
-    info.querySelector('.model-name').textContent = model.name;
-
-    card.append(badge,img,price,info);
-    catalogGrid.appendChild(card);
+      <div class="params-row"><span>${esc(m.age)} років</span><span>${esc(m.height)} см</span><span>${esc(m.weight)} кг</span></div></div>`;
+    card.addEventListener('click',()=>openModelProfile(m));
+    card.querySelector('img').addEventListener('error',e=>{e.currentTarget.src=FALLBACK_IMG});
+    grid.appendChild(card);
   });
 }
 
-function toggleFilters() {
-  document.getElementById('filters').classList.toggle('hidden');
+function openModelProfile(m){
+  document.getElementById('p-name').textContent=`${m.name}, ${m.age} років`;
+  document.getElementById('p-age').textContent=`${m.age} років`;
+  document.getElementById('p-height').textContent=`${m.height} см`;
+  document.getElementById('p-weight').textContent=`${m.weight} кг`;
+  document.getElementById('p-price-virt').textContent=`${m.p_virt} грн`;
+  document.getElementById('p-price-media').textContent=`${m.p_media} грн`;
+  document.getElementById('p-price-chat').textContent=`${m.p_chat} грн`;
+  const photo=document.getElementById('p-photo');
+  photo.src=m.photo||FALLBACK_IMG;
+  photo.onerror=()=>{photo.src=FALLBACK_IMG};
+  showScreen('screen-profile');
 }
 
-document.getElementById('menu-home').addEventListener('click', () => { showScreen('screen-catalog'); setMenu('menu-home'); renderCatalog(); });
-document.getElementById('menu-cabinet').addEventListener('click', () => { showScreen('screen-cabinet'); setMenu('menu-cabinet'); });
-['search-name','filter-age','filter-height','filter-price'].forEach(id =>
-  document.getElementById(id).addEventListener('input', renderCatalog)
-);
+function showScreen(id){
+  ['screen-catalog','screen-profile','screen-cabinet'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
+}
+function setMenu(id){
+  document.getElementById('menu-home').classList.toggle('active',id==='menu-home');
+  document.getElementById('menu-cabinet').classList.toggle('active',id==='menu-cabinet');
+}
+function resetForm(){
+  ['m-name','m-photo','m-age','m-height','m-weight','m-p-virt','m-p-media','m-p-chat'].forEach(id=>document.getElementById(id).value='');
+}
 
-document.getElementById('save-profile-btn').addEventListener('click', () => {
-  const name = document.getElementById('m-name').value.trim();
-  if (!name) { alert("Будь ласка, вкажи ім'я моделі!"); return; }
+document.getElementById('menu-home').onclick=()=>{setMenu('menu-home');showScreen('screen-catalog')};
+document.getElementById('menu-cabinet').onclick=()=>{setMenu('menu-cabinet');showScreen('screen-cabinet')};
+document.getElementById('back-btn').onclick=()=>{setMenu('menu-home');showScreen('screen-catalog')};
+document.getElementById('filter-toggle').onclick=()=>document.getElementById('filters').classList.toggle('show');
+['filter-name','filter-age','filter-height','filter-price'].forEach(id=>document.getElementById(id).addEventListener('input',renderCatalog));
 
-  const model = {
-    name,
-    photo: document.getElementById('m-photo').value.trim() || PLACEHOLDER,
-    age: Number(document.getElementById('m-age').value) || 21,
-    height: Number(document.getElementById('m-height').value) || 168,
-    weight: Number(document.getElementById('m-weight').value) || 50,
-    pVirt: Number(document.getElementById('m-p-virt').value) || 0,
-    pMedia: Number(document.getElementById('m-p-media').value) || 0,
-    pChat: Number(document.getElementById('m-p-chat').value) || 0,
-    vip: false
-  };
+document.getElementById('save-profile-btn').onclick=async()=>{
+  const model=normalizeModel({
+    name:document.getElementById('m-name').value.trim(),
+    photo:document.getElementById('m-photo').value.trim(),
+    age:document.getElementById('m-age').value,
+    height:document.getElementById('m-height').value,
+    weight:document.getElementById('m-weight').value,
+    p_virt:document.getElementById('m-p-virt').value,
+    p_media:document.getElementById('m-p-media').value,
+    p_chat:document.getElementById('m-p-chat').value,
+    vip:false
+  });
+  if(!model.name){alert("Будь ласка, вкажи ім'я моделі!");return}
+  if(model.age<18){alert('Вік моделі має бути не менше 18 років.');return}
+  if(!model.photo){alert('Вкажи посилання на фото.');return}
+  if(!/^https?:\/\//i.test(model.photo)){alert('Посилання на фото має починатися з http:// або https://');return}
 
-  if (model.age < 18) { alert('Анкети доступні лише для повнолітніх моделей.'); return; }
+  try{
+    const saved=JSON.parse(localStorage.getItem('virtualModelsUkraine')||'[]');
+    saved.push(model);
+    localStorage.setItem('virtualModelsUkraine',JSON.stringify(saved));
+  }catch(e){}
 
-  userModels.unshift(model);
-  models = [...defaultModels, ...userModels];
-  localStorage.setItem('virtualModelsUkraine', JSON.stringify(userModels));
-
-  if (tg && typeof tg.sendData === 'function') {
-    try { tg.sendData(JSON.stringify({action:'new_model', model})); } catch (_) {}
+  if(tg && tg.sendData){
+    try{tg.sendData(JSON.stringify({action:'new_model',model}));}
+    catch(e){console.warn(e)}
   }
 
-  ['m-name','m-photo','m-age','m-height','m-weight','m-p-virt','m-p-media','m-p-chat']
-    .forEach(id => document.getElementById(id).value = '');
+  try{
+    const r=await fetch('/api/models',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(model)});
+    if(r.ok){ /* сервер зберіг */ }
+  }catch(e){ /* якщо API недоступне, локальна копія все одно залишиться */ }
 
+  models.push(model);
   renderCatalog();
-  showScreen('screen-catalog');
+  resetForm();
   setMenu('menu-home');
+  showScreen('screen-catalog');
   alert('Анкету додано до каталогу.');
-});
+};
 
-renderCatalog();
+loadModels();
 </script>
 </body>
 </html>
 '''
 
-out = Path("/mnt/data/virtu_models_ukraine_fixed.html")
-out.write_text(html, encoding="utf-8")
-print(f"Готово: {out}")
-print(f"Розмір: {out.stat().st_size:,} байт")
+bot = r'''import asyncio
+import json
+import sqlite3
+from pathlib import Path
+
+from aiohttp import web
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import CommandStart
+from aiogram.types import MenuButtonWebApp, WebAppInfo
+
+# =========================
+# НАЛАШТУЙ ЦІ 2 РЯДКИ
+# =========================
+BOT_TOKEN = "СЮДИ_ВСТАВ_ТОКЕН_ВІД_BOTFATHER"
+WEB_APP_URL = "https://YOUR-DOMAIN.example"
+
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "models.db"
+HTML_PATH = BASE_DIR / "index.html"
+
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher()
+
+
+def db_connect():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db():
+    conn = db_connect()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS models (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            photo TEXT NOT NULL,
+            age INTEGER NOT NULL,
+            height INTEGER NOT NULL,
+            weight INTEGER NOT NULL,
+            p_virt INTEGER NOT NULL DEFAULT 0,
+            p_media INTEGER NOT NULL DEFAULT 0,
+            p_chat INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+def validate_model(data):
+    required = ["name", "photo", "age", "height", "weight", "p_virt", "p_media", "p_chat"]
+    if any(k not in data for k in required):
+        raise ValueError("Не вистачає полів анкети")
+
+    name = str(data["name"]).strip()
+    photo = str(data["photo"]).strip()
+    age = int(data["age"])
+    height = int(data["height"])
+    weight = int(data["weight"])
+    p_virt = int(data["p_virt"])
+    p_media = int(data["p_media"])
+    p_chat = int(data["p_chat"])
+
+    if not name:
+        raise ValueError("Порожнє ім'я")
+    if age < 18:
+        raise ValueError("Вік має бути 18+")
+    if not photo.startswith(("http://", "https://")):
+        raise ValueError("Некоректне посилання на фото")
+    if min(height, weight, p_virt, p_media, p_chat) < 0:
+        raise ValueError("Числові значення не можуть бути від'ємними")
+
+    return (name, photo, age, height, weight, p_virt, p_media, p_chat)
+
+
+def save_model(data):
+    values = validate_model(data)
+    conn = db_connect()
+    cur = conn.execute("""
+        INSERT INTO models
+        (name, photo, age, height, weight, p_virt, p_media, p_chat)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, values)
+    conn.commit()
+    model_id = cur.lastrowid
+    conn.close()
+    return model_id
+
+
+def get_models():
+    conn = db_connect()
+    rows = conn.execute("""
+        SELECT id, name, photo, age, height, weight,
+               p_virt, p_media, p_chat
+        FROM models
+        ORDER BY id DESC
+    """).fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+async def index(request):
+    if not HTML_PATH.exists():
+        return web.Response(text="Файл index.html не знайдено", status=500)
+    return web.FileResponse(HTML_PATH)
+
+
+async def api_models(request):
+    return web.json_response(get_models())
+
+
+async def api_add_model(request):
+    try:
+        data = await request.json()
+        model_id = save_model(data)
+        return web.json_response({"ok": True, "id": model_id})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=400)
+
+
+async def cmd_start(message: types.Message):
+    await bot.set_chat_menu_button(
+        chat_id=message.chat.id,
+        menu_button=MenuButtonWebApp(
+            text="Кабінет ⚡",
+            web_app=WebAppInfo(url=WEB_APP_URL)
+        )
+    )
+    await message.answer(
+        "Вітаємо! Натисніть «Кабінет ⚡», щоб відкрити Вірт Моделі України."
+    )
+
+
+@dp.message(lambda message: message.web_app_data is not None)
+async def handle_web_app_data(message: types.Message):
+    try:
+        data = json.loads(message.web_app_data.data)
+
+        if data.get("action") != "new_model":
+            return
+
+        # Новий формат: {"action":"new_model","model":{...}}
+        model = data.get("model")
+
+        # Підтримка старого формату теж залишена.
+        if not model:
+            model = {
+                "name": data.get("name"),
+                "photo": data.get("photo"),
+                "age": data.get("age"),
+                "height": data.get("height"),
+                "weight": data.get("weight"),
+                "p_virt": data.get("p_virt"),
+                "p_media": data.get("p_media"),
+                "p_chat": data.get("p_chat"),
+            }
+
+        save_model(model)
+
+        await message.answer(
+            f"🎉 Анкету моделі «{model.get('name')}» збережено в базі."
+        )
+
+    except Exception:
+        await message.answer(
+            "❌ Не вдалося зберегти анкету. Перевір дані та спробуй ще раз."
+        )
+
+
+async def start_web_server():
+    app = web.Application()
+    app.router.add_get("/", index)
+    app.router.add_get("/api/models", api_models)
+    app.router.add_post("/api/models", api_add_model)
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+
+    # Для Render/Railway та подібних сервісів використовуємо PORT.
+    import os
+    port = int(os.getenv("PORT", "8080"))
+
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
+    print(f"Web server запущено на порту {port}")
+    return runner
+
+
+async def main():
+    init_db()
+
+    if BOT_TOKEN.startswith("СЮДИ_"):
+        raise RuntimeError("Встав BOT_TOKEN у bot.py")
+
+    if WEB_APP_URL.startswith("https://YOUR-DOMAIN"):
+        raise RuntimeError("Встав WEB_APP_URL у bot.py")
+
+    runner = await start_web_server()
+
+    dp.message.register(cmd_start, CommandStart())
+    print("Бот запущений.")
+
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await runner.cleanup()
+        await bot.session.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+'''
+
+readme = """ФАЙЛИ ПРОЄКТУ
+
+1. index.html — встав сюди перший код.
+2. bot.py — встав сюди другий код.
+3. Встанови залежності:
+   pip install aiogram aiohttp
+
+4. У bot.py заміни:
+   BOT_TOKEN = "..."
+   WEB_APP_URL = "https://..."
+
+5. Запусти:
+   python bot.py
+
+ВАЖЛИВО:
+WEB_APP_URL має бути HTTPS-адресою, яка відкриває цей index.html.
+База models.db створиться автоматично.
+Нові анкети зберігатимуться в SQLite та будуть доступні всім користувачам через /api/models.
+"""
+
+outdir=Path("/mnt/data/virtu_models_ukraine_complete")
+outdir.mkdir(exist_ok=True)
+(outdir/"index.html").write_text(html,encoding="utf-8")
+(outdir/"bot.py").write_text(bot,encoding="utf-8")
+(outdir/"README.txt").write_text(readme,encoding="utf-8")
+print(outdir, [p.name for p in outdir.iterdir()])
