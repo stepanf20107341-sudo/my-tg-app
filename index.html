@@ -3,147 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Кабінет</title>
-    <!-- Подключаем официальный скрипт Telegram -->
+    <title>TG App</title>
+    <!-- Підключаємо скрипт Telegram -->
     <script src="https://telegram.org"></script>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #f4f4f5);
-            color: var(--tg-theme-text-color, #000000);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .profile-card {
-            background-color: var(--tg-theme-secondary-bg-color, #ffffff);
-            border-radius: 16px;
-            padding: 20px;
-            width: 90%;
-            max-width: 350px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-family: sans-serif;
+            background-color: #17212b;
+            color: #ffffff;
             text-align: center;
-            margin-top: 20px;
+            padding: 30px;
+            margin: 0;
         }
-        .avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            font-weight: bold;
-            margin: 0 auto 15px auto;
-        }
-        h2 { margin: 5px 0; font-size: 22px; }
-        .username { color: #8e8e93; font-size: 14px; margin-bottom: 20px; }
-        .balance-box {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
+        .card {
+            background-color: #242f3d;
+            padding: 20px;
             border-radius: 12px;
-            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        button {
+            background-color: #5288c1;
+            color: white;
+            border: none;
+            padding: 15px 30px;
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .btn {
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 8px;
             cursor: pointer;
+            margin-top: 20px;
             width: 100%;
-            margin-bottom: 10px;
-            user-select: none;
-            -webkit-user-select: none;
         }
-        .btn:active { opacity: 0.8; }
-        .btn-save { background-color: #10b981; color: white; }
+        button:active { opacity: 0.8; }
     </style>
 </head>
 <body>
 
-    <div class="profile-card">
-        <div class="avatar" id="user-avatar">👤</div>
-        <h2 id="user-name">Завантаження...</h2>
-        <div class="username" id="user-username">@username</div>
-        
-        <div class="balance-box">
-            🪙 Баланс: <span id="balance-val">0</span> монет
-        </div>
-
-        <button class="btn" id="click-btn">Заробити 1 монету ⚡</button>
-        <button class="btn btn-save" id="save-btn">Зберегти та закрити</button>
+    <div class="card">
+        <h2 id="name">Користувач</h2>
+        <h3 style="color: #f59e0b;">🪙 Баланс: <span id="bal">0</span></h3>
+        <button id="btn">Заробити 1 монету ⚡</button>
     </div>
 
     <script>
-        // Инициализация WebApp
-        const tg = window.Telegram.WebApp;
-        
-        // Обязательно вызываем ready и expand сразу
+        // Ініціалізація
+        var tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        let balance = 0;
-        let usernameStr = "unknown";
+        var balance = 0;
 
-        // Функция для обновления данных на экране
-        function initUserData() {
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                const user = tg.initDataUnsafe.user;
-                
-                // Ставим имя
-                document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
-                
-                // Ставим юзернейм
-                if (user.username) {
-                    usernameStr = "@" + user.username;
-                    document.getElementById('user-username').innerText = usernameStr;
-                } else {
-                    document.getElementById('user-username').innerText = "ID: " + user.id;
-                }
-                
-                // Ставим первую букву на аватарку
-                if (user.first_name) {
-                    document.getElementById('user-avatar').innerText = user.first_name.charAt(0).toUpperCase();
-                }
-            } else {
-                // Если Telegram еще не передал данные (на ПК бывает задержка в 1 секунду)
-                document.getElementById('user-name').innerText = "Користувач ПК";
-                document.getElementById('user-username').innerText = "@telegram_user";
-            }
+        // Одразу міняємо текст, щоб перевірити роботу скрипта
+        document.getElementById('name').innerText = "Клікер аккаунта";
+
+        // Пробуємо взяти ім'я
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            document.getElementById('name').innerText = tg.initDataUnsafe.user.first_name;
         }
 
-        // Запускаем считывание данных
-        initUserData();
-
-        // Кнопка заработка (Кликер)
-        document.getElementById('click-btn').addEventListener('click', (e) => {
-            e.preventDefault();
-            balance++;
-            document.getElementById('balance-val').innerText = balance;
-        });
-
-        // Кнопка сохранения данных
-        document.getElementById('save-btn').addEventListener('click', (e) => {
-            e.preventDefault();
-            const data = {
-                balance: balance,
-                username: usernameStr
-            };
-            // Отправляем данные боту
-            tg.sendData(JSON.stringify(data));
-            // Закрываем окно
-            tg.close();
-        });
+        // Клік на кнопку
+        document.getElementById('btn').onclick = function() {
+            balance = balance + 1;
+            document.getElementById('bal').innerText = balance;
+        };
     </script>
 </body>
 </html>
