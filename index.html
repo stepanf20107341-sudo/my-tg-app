@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TG Clicker</title>
+    <title>TG App</title>
+    <!-- Підключаємо базовий скрипт Telegram Mini Apps -->
     <script src="https://telegram.org"></script>
     <style>
         body {
@@ -11,23 +12,25 @@
             background-color: #17212b;
             color: #ffffff;
             text-align: center;
-            padding: 30px;
+            padding-top: 50px;
             margin: 0;
         }
         .card {
             background-color: #242f3d;
             padding: 30px;
-            border-radius: 20px;
-            margin-top: 50px;
+            border-radius: 16px;
+            display: inline-block;
+            width: 80%;
+            max-width: 300px;
         }
         button {
             background-color: #5288c1;
             color: white;
             border: none;
-            padding: 16px 20px;
+            padding: 15px 20px;
             font-size: 18px;
             font-weight: bold;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             width: 100%;
             margin-top: 20px;
@@ -38,21 +41,24 @@
 
     <div class="card">
         <h2>Мій Клікер ⚡</h2>
-        <h3 style="color: #f59e0b;">🪙 Монет: <span id="bal">0</span></h3>
-        <button id="btn">Заробити 1 монету ⚡</button>
+        <h3>🪙 Баланс: <span id="counter">0</span></h3>
+        <button id="click-btn">Натисни мене! ⚡</button>
     </div>
 
     <script>
+        // Ініціалізуємо Telegram WebApp
         var tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        var balance = 0;
+        var count = 0;
+        var display = document.getElementById('counter');
+        var button = document.getElementById('click-btn');
 
-        // Чистый клик по кнопке без блокировок
-        document.getElementById('btn').onclick = function() {
-            balance = balance + 1;
-            document.getElementById('bal').innerText = balance;
+        // Найпростіший клікер на чистій функції
+        button.onclick = function() {
+            count = count + 1;
+            display.innerText = count;
         };
     </script>
 </body>
