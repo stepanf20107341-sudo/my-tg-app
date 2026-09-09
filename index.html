@@ -3,63 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TG App</title>
-    <!-- Підключаємо базовий скрипт Telegram Mini Apps -->
+    <title>Мій Профіль</title>
+    <!-- Підключаємо офіційний скрипт Telegram -->
     <script src="https://telegram.org"></script>
     <style>
         body {
-            font-family: sans-serif;
-            background-color: #17212b;
-            color: #ffffff;
-            text-align: center;
-            padding-top: 50px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #17212b);
+            color: var(--tg-theme-text-color, #ffffff);
             margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
         }
-        .card {
-            background-color: #242f3d;
-            padding: 30px;
+        .profile-box {
+            background-color: var(--tg-theme-secondary-bg-color, #242f3d);
             border-radius: 16px;
-            display: inline-block;
-            width: 80%;
-            max-width: 300px;
+            padding: 30px;
+            width: 90%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
-        button {
-            background-color: #5288c1;
-            color: white;
-            border: none;
-            padding: 15px 20px;
-            font-size: 18px;
+        .avatar-circle {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background-color: var(--tg-theme-button-color, #5288c1);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
             font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
+            margin: 0 auto 20px auto;
+        }
+        h2 {
+            margin: 10px 0 5px 0;
+            font-size: 24px;
+        }
+        .username-text {
+            color: #708499;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+        .welcome-msg {
+            background-color: rgba(82, 136, 193, 0.1);
+            border: 1px solid rgba(82, 136, 193, 0.3);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--tg-theme-text-color, #ffffff);
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Мій Клікер ⚡</h2>
-        <h3>🪙 Баланс: <span id="counter">0</span></h3>
-        <button id="click-btn">Натисни мене! ⚡</button>
+    <div class="profile-box">
+        <!-- Сюди стане перша літера імені -->
+        <div class="avatar-circle" id="user-avatar">?</div>
+        <!-- Сюди стане повне ім'я -->
+        <h2 id="user-name">Завантаження...</h2>
+        <!-- Сюди стане @username користувача -->
+        <div class="username-text" id="user-username">@username</div>
+        
+        <div class="welcome-msg">
+            ✅ Ви успішно авторизувалися через свій Telegram акаунт!
+        </div>
     </div>
 
     <script>
-        // Ініціалізуємо Telegram WebApp
-        var tg = window.Telegram.WebApp;
+        // Ініціалізація Telegram WebApp
+        const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        var count = 0;
-        var display = document.getElementById('counter');
-        var button = document.getElementById('click-btn');
-
-        // Найпростіший клікер на чистій функції
-        button.onclick = function() {
-            count = count + 1;
-            display.innerText = count;
-        };
+        // Функція для автоматичного зчитування акаунта користувача
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            const user = tg.initDataUnsafe.user;
+            
+            // Виводимо реальне ім'я
+            document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
+            
+            # Виводимо реальний @username або ID, якщо юзернейму немає
+            if (user.username) {
+                document.getElementById('user-username').innerText = "@" + user.username;
+            } else {
+                document.getElementById('user-username').innerText = "ID: " + user.id;
+            }
+            
+            // Робимо красиву аватарку з першої літери імені
+            if (user.first_name) {
+                document.getElementById('user-avatar').innerText = user.first_name.charAt(0).toUpperCase();
+            }
+        } else {
+            // Заглушка, якщо відкрити просто в браузері, а не в Telegram
+            document.getElementById('user-name').innerText = "Гість";
+            document.getElementById('user-username').innerText = "@not_telegram";
+        }
     </script>
 </body>
 </html>
