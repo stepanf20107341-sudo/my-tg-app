@@ -3,65 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TG App</title>
-    <!-- Підключаємо скрипт Telegram -->
+    <title>TG Clicker App</title>
+    <!-- Официальный скрипт Telegram -->
     <script src="https://telegram.org"></script>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #17212b;
             color: #ffffff;
             text-align: center;
             padding: 30px;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
         }
         .card {
             background-color: #242f3d;
-            padding: 20px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            width: 85%;
+            max-width: 320px;
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 24px;
+        }
+        .balance-box {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
             border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            padding: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
         }
         button {
             background-color: #5288c1;
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 16px 20px;
             font-size: 18px;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            margin-top: 20px;
             width: 100%;
+            transition: background-color 0.1s;
         }
-        button:active { opacity: 0.8; }
+        button:active {
+            background-color: #4172a5;
+        }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2 id="name">Користувач</h2>
-        <h3 style="color: #f59e0b;">🪙 Баланс: <span id="bal">0</span></h3>
+        <h2 id="title-text">Клікер Кабінет ⚡</h2>
+        
+        <div class="balance-box">
+            🪙 Баланс: <span id="bal">0</span> монет
+        </div>
+        
         <button id="btn">Заробити 1 монету ⚡</button>
     </div>
 
     <script>
-        // Ініціалізація
+        // Инициализируем WebApp
         var tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
         var balance = 0;
 
-        // Одразу міняємо текст, щоб перевірити роботу скрипта
-        document.getElementById('name').innerText = "Клікер аккаунта";
-
-        // Пробуємо взяти ім'я
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            document.getElementById('name').innerText = tg.initDataUnsafe.user.first_name;
-        }
-
-        // Клік на кнопку
-        document.getElementById('btn').onclick = function() {
+        // Обычный рабочий кликер без блокировок
+        document.getElementById('btn').onclick = function(e) {
+            e.preventDefault(); // Защита от двойного клика браузера
             balance = balance + 1;
             document.getElementById('bal').innerText = balance;
         };
