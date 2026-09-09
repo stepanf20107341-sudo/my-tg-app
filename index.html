@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Кабінет</title>
+    <!-- Подключаем официальный скрипт Telegram -->
     <script src="https://telegram.org"></script>
     <style>
         body {
@@ -61,7 +62,8 @@
             cursor: pointer;
             width: 100%;
             margin-bottom: 10px;
-            transition: opacity 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
         }
         .btn:active { opacity: 0.8; }
         .btn-save { background-color: #10b981; color: white; }
@@ -70,7 +72,7 @@
 <body>
 
     <div class="profile-card">
-        <div class="avatar" id="user-avatar">?</div>
+        <div class="avatar" id="user-avatar">👤</div>
         <h2 id="user-name">Завантаження...</h2>
         <div class="username" id="user-username">@username</div>
         
@@ -83,37 +85,63 @@
     </div>
 
     <script>
+        // Инициализация WebApp
         const tg = window.Telegram.WebApp;
+        
+        // Обязательно вызываем ready и expand сразу
         tg.ready();
         tg.expand();
 
         let balance = 0;
         let usernameStr = "unknown";
 
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            const user = tg.initDataUnsafe.user;
-            document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
-            
-            if (user.username) {
-                usernameStr = "@" + user.username;
-                document.getElementById('user-username').innerText = usernameStr;
+        // Функция для обновления данных на экране
+        function initUserData() {
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                
+                // Ставим имя
+                document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
+                
+                // Ставим юзернейм
+                if (user.username) {
+                    usernameStr = "@" + user.username;
+                    document.getElementById('user-username').innerText = usernameStr;
+                } else {
+                    document.getElementById('user-username').innerText = "ID: " + user.id;
+                }
+                
+                // Ставим первую букву на аватарку
+                if (user.first_name) {
+                    document.getElementById('user-avatar').innerText = user.first_name.charAt(0).toUpperCase();
+                }
             } else {
-                document.getElementById('user-username').innerText = "ID: " + user.id;
+                // Если Telegram еще не передал данные (на ПК бывает задержка в 1 секунду)
+                document.getElementById('user-name').innerText = "Користувач ПК";
+                document.getElementById('user-username').innerText = "@telegram_user";
             }
-            document.getElementById('user-avatar').innerText = user.first_name.charAt(0).toUpperCase();
-        } else {
-            document.getElementById('user-name').innerText = "Гість";
-            document.getElementById('user-username').innerText = "@not_telegram";
         }
 
-        document.getElementById('click-btn').addEventListener('click', () => {
+        // Запускаем считывание данных
+        initUserData();
+
+        // Кнопка заработка (Кликер)
+        document.getElementById('click-btn').addEventListener('click', (e) => {
+            e.preventDefault();
             balance++;
             document.getElementById('balance-val').innerText = balance;
         });
 
-        document.getElementById('save-btn').addEventListener('click', () => {
-            const data = { balance: balance, username: usernameStr };
+        // Кнопка сохранения данных
+        document.getElementById('save-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            const data = {
+                balance: balance,
+                username: usernameStr
+            };
+            // Отправляем данные боту
             tg.sendData(JSON.stringify(data));
+            // Закрываем окно
             tg.close();
         });
     </script>
