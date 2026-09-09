@@ -1,151 +1,56 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кабінет Агентства</title>
-    <!-- Официальный рабочий скрипт Telegram -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #17212b;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 90vh;
-        }
-        .agency-box {
-            background-color: #242f3d;
-            border-radius: 16px;
-            padding: 25px;
-            width: 90%;
-            max-width: 340px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-        .header-profile {
-            display: flex;
-            align-items: center;
-            text-align: left;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 15px;
-        }
-        .avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #5288c1;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            margin-right: 15px;
-        }
-        h2 { margin: 0; font-size: 20px; }
-        .username { color: #708499; font-size: 14px; margin-top: 2px; }
-        
-        .status-card {
-            background-color: rgba(82, 136, 193, 0.1);
-            border: 1px solid rgba(82, 136, 193, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: left;
-            margin-bottom: 20px;
-        }
-        .status-title { font-size: 12px; color: #708499; text-transform: uppercase; letter-spacing: 0.5px; }
-        .status-value { font-size: 16px; font-weight: bold; color: #10b981; margin-top: 5px; }
+import asyncio
+import json
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import CommandStart
+from aiogram.types import WebAppInfo, MenuButtonWebApp
 
-        .btn {
-            background-color: #5288c1;
-            color: #ffffff;
-            border: none;
-            border-radius: 10px;
-            padding: 14px 20px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 10px;
-            display: block;
-            box-sizing: border-box;
-            text-align: center;
-        }
-        .btn:active { opacity: 0.85; }
-        .btn-secondary {
-            background-color: transparent;
-            border: 1px solid #5288c1;
-            color: #5288c1;
-        }
-    </style>
-</head>
-<body>
+# !!! СЮДИ ВСТАВ СВІЙ ТОКЕН ВІД BOTFATHER МІЖ КАВИЧКАМИ !!!
+BOT_TOKEN = "СЮДИ_ВСТАВ_СВІЙ_ТОКЕН"
 
-    <div class="agency-box">
-        <div class="header-profile">
-            <div class="avatar" id="u-avatar">💼</div>
-            <div>
-                <h2 id="u-name">Клієнт Агентства</h2>
-                <div class="username" id="u-username">@agency_user</div>
-            </div>
-        </div>
-        
-        <div class="status-card">
-            <div class="status-title">Статус аккаунта в агентстві</div>
-            <div class="status-value">● Активний (Авторизовано)</div>
-        </div>
+# Твоє постійне та перевірене посилання з GitHub Pages
+WEB_APP_URL = "https://github.io"
 
-        <button class="btn" id="order-btn">Залишити нову заявку 📝</button>
-        <button class="btn btn-secondary" id="support-btn">Закрити кабінет ✖</button>
-    </div>
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher()
 
-    <script>
-        // Инициализация без зависаний
-        try {
-            var tg = window.Telegram.WebApp;
-            if (tg) {
-                tg.ready();
-                tg.expand();
+# Обробка команди /start
+@dp.message(CommandStart())
+async def cmd_start(message: types.Message):
+    # Налаштовуємо офіційну кнопку "Кабінет ⚡" ліворуч від поля введення тексту
+    await bot.set_chat_menu_button(
+        chat_id=message.chat.id,
+        menu_button=MenuButtonWebApp(
+            text="Кабінет ⚡",
+            web_app=WebAppInfo(url=WEB_APP_URL)
+        )
+    )
+    
+    await message.answer(
+        f"Вітаємо у каталозі Вірт-Моделей України, {message.from_user.first_name}!\n\n"
+        f"Внизу екрана (ліворуч від поля введення) з'явилася кнопка «Кабінет ⚡».\n"
+        f"Натисни її, щоб переглянути каталог моделей або створити власну анкету!"
+    )
 
-                // Пробуем считать профиль, если Telegram его отдает
-                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                    var user = tg.initDataUnsafe.user;
-                    document.getElementById('u-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
-                    if (user.username) {
-                        document.getElementById('u-username').innerText = "@" + user.username;
-                    } else {
-                        document.getElementById('u-username').innerText = "ID: " + user.id;
-                    }
-                    if (user.first_name) {
-                        document.getElementById('u-avatar').innerText = user.first_name.charAt(0).toUpperCase();
-                    }
-                }
-            }
-        } catch (e) {
-            console.log("Telegram SDK не поддерживается в текущем режиме браузера");
-        }
+# Бот автоматично ловить сповіщення, коли модель створює нову анкету через сайт
+@dp.message(lambda message: message.web_app_data is not None)
+async def handle_web_app_data(message: types.Message):
+    try:
+        data = json.loads(message.web_app_data.data)
+        if data.get("action") == "new_model":
+            text_response = (
+                f"👑 **Зареєстровано нову модель в агентстві!**\n\n"
+                f"👤 Ім'я дівчини: {data.get('name')}\n"
+                f"💰 Початкова ціна (вірт): {data.get('price')} грн\n"
+                f"💬 Telegram для зв'язку: @{message.from_user.username if message.from_user.username else 'Немає юзернейму'}"
+            )
+            await message.answer(text_response, parse_mode="Markdown")
+    except Exception:
+        pass
 
-        // Кнопка Заявки — теперь работает ВСЕГДА
-        document.getElementById('order-btn').onclick = function() {
-            alert("Форма заявки для агентства успешно вызвана!");
-        };
+async def main():
+    print("🚀 Бот Агентства Вірт-Моделей успішно запущений!")
+    print("Поточне посилання додатка: " + WEB_APP_URL)
+    await dp.start_polling(bot)
 
-        // Кнопка закрытия кабинета
-        document.getElementById('support-btn').onclick = function() {
-            try {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.close();
-                }
-            } catch(err) {
-                window.close();
-            }
-        };
-    </script>
-</body>
-</html>
+if __name__ == "__main__":
+    asyncio.run(main())
